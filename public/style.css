@@ -111,3 +111,8 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
 .listrow{cursor:pointer;padding:12px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:#fff}.listrow.on{border-color:var(--p);background:var(--mint)}
 .empty{color:var(--mute);padding:16px 0}
 @media(max-width:700px){.rxrow{grid-template-columns:1fr 1fr}.bl{width:260px}}
+/* react app */
+.toasts{position:fixed;bottom:24px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:8px;z-index:50;pointer-events:none}
+.toasts .toast{position:static;transform:none}
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.4);display:grid;place-items:center;z-index:40;padding:16px}
+.modal-box{max-width:360px;width:100%}

@@ -1,4 +1,5 @@
 require("dotenv").config();
+const fs = require("fs");
 const path = require("path");
 const express = require("express");
 const mongoose = require("mongoose");
@@ -10,8 +11,8 @@ app.use((req, res, next) => {
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
     "Referrer-Policy": "same-origin",
-    // inline scripts/styles are used by the pages; everything else is locked to this site (+ Google Fonts)
-    "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
+    // scripts only from this site (no inline scripts); inline styles are still allowed; fonts from Google
+    "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
   });
   if (req.path.startsWith("/api")) res.set("Cache-Control", "no-store");
   next();
@@ -21,8 +22,21 @@ app.get("/api", (_q, res) => res.json({ ok: true, name: "MediAssist API running"
 for (const f of ["core", "pharmacy", "concierge", "notify"]) app.use("/api", require(`./routes/${f}`));
 app.use("/api", (_q, res) => res.status(404).json({ error: "No such route" }));
 
-// only public/ is served; never the project root (would expose server/.env)
+// The React app is built into client/dist (run `npm run build`). Its build also copies public/
+// (style.css, logo.svg, hospital.html, doctors.xml). Only these two folders are served: never the project
+// root, which would expose server/.env.
+const DIST = path.join(__dirname, "..", "client", "dist");
+const hasDist = fs.existsSync(path.join(DIST, "index.html"));
+app.use(express.static(DIST));
 app.use(express.static(path.join(__dirname, "..", "public")));
+
+// React Router pages (/doctors, /dashboard ...) all return index.html. Plain middleware because Express 5
+// rejects "*" routes. Skips /api and anything with a file extension, so a missing .js or .png still 404s.
+app.use((req, res, next) => {
+  if (req.method !== "GET" || req.path.startsWith("/api") || path.extname(req.path) || /(^|\/)\./.test(req.path)) return next(); // files and dotfiles are never "pages"
+  if (!hasDist) return res.status(503).type("text").send("The website is not built yet. Run: npm run build (in the server folder), then restart.");
+  res.sendFile(path.join(DIST, "index.html"));
+});
 
 app.use((err, _q, res, _n) => {
   if (err.name === "CastError") return res.status(400).json({ error: "Invalid input" });

@@ -144,7 +144,7 @@ for (const k of ["GEMINI_API_KEY", "SMTP_URL", "MONGO_URI"]) process.env[k] = ""
   assert.equal((await Notification.findById(n0.id)).sent, true); ok("cron job sends due reminders");
 
   // ---- security regressions ----
-  const hd = await fetch(base + "/index.html");
+  const hd = await fetch(base + "/hospital.html");
   assert.equal(hd.headers.get("x-content-type-options"), "nosniff"); assert.ok(/default-src 'self'/.test(hd.headers.get("content-security-policy"))); ok("security headers set");
   const inj = await call("GET", "/api/doctors?department[$ne]=x"); assert.ok(inj.status === 400 || (inj.status === 200 && inj.json.length >= 6)); ok("query operator injection is not applied as a filter");
   assert.equal((await call("POST", "/api/doctors", { token: st, body: { name: "X", department: cardio._id, availability: [{ weekday: 9, start: "10:00", end: "11:00" }] } })).status, 400); ok("bad availability rejected");
@@ -172,7 +172,7 @@ for (const k of ["GEMINI_API_KEY", "SMTP_URL", "MONGO_URI"]) process.env[k] = ""
   assert.equal((await call("GET", "/.env")).status, 404);
   assert.equal((await call("GET", "/server/.env")).status, 404);
   assert.equal((await call("GET", "/image2.png")).status, 404);
-  assert.equal((await call("GET", "/index.html")).status, 200); ok("static serves public/ only");
+  assert.equal((await call("GET", "/hospital.html")).status, 200); ok("static serves public/ only");
 
   console.log(`\nALL ${n} CHECKS PASSED`);
   server.close(); await mongoose.disconnect(); await mongod.stop(); process.exit(0);
