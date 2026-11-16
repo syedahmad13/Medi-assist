@@ -19,10 +19,12 @@
   <h1>Staff dashboard</h1>
   <div class="tabs" id="tabs">
     <button class="on" data-t="rx">Prescription review</button>
+    <button data-t="deps">Departments</button>
     <button data-t="docs">Doctors</button>
     <button data-t="appts">Appointments</button>
   </div>
   <section id="rx" style="padding:16px 0 0"></section>
+  <section id="deps" style="padding:16px 0 0" hidden></section>
   <section id="docs" style="padding:16px 0 0" hidden></section>
   <section id="appts" style="padding:16px 0 0" hidden></section>
 </main>
@@ -34,8 +36,8 @@ if (requireLogin("staff")) {
   $("#tabs").onclick = (e) => {
     const b = e.target.closest("button"); if (!b) return;
     $$("#tabs button").forEach((x) => x.classList.toggle("on", x === b));
-    ["rx", "docs", "appts"].forEach((id) => $("#" + id).hidden = id !== b.dataset.t);
-    ({ rx: loadRx, docs: loadDocs, appts: loadAppts })[b.dataset.t]();
+    ["rx", "deps", "docs", "appts"].forEach((id) => $("#" + id).hidden = id !== b.dataset.t);
+    ({ rx: loadRx, deps: loadDeps, docs: loadDocs, appts: loadAppts })[b.dataset.t]();
   };
 
   /* ---------- prescriptions ---------- */
@@ -86,6 +88,33 @@ if (requireLogin("staff")) {
       }).filter((m) => m.name);
       try { await api(`/prescriptions/${sel}/status`, { method: "PATCH", body }); toast("Updated"); filter = ""; /* keep the request visible after its status changes */ loadRx(); } catch (err) { fail(err); }
     }
+  });
+
+  /* ---------- departments (CRUD) ---------- */
+  let depEditing = null;
+  async function loadDeps() {
+    let list;
+    try { list = await api("/departments"); } catch (e) { return fail(e); }
+    const d = depEditing ? list.find((x) => x._id === depEditing) : null;
+    $("#deps").innerHTML = `<div class="two"><div class="card">${list.length ? `<table><tr><th>Name</th><th>Description</th><th></th></tr>
+      ${list.map((x) => `<tr><td>${esc(x.name)}</td><td>${esc(x.description || "")}</td><td style="white-space:nowrap"><button class="btn sm" data-edd="${esc(x._id)}">Edit</button> <button class="btn sm d" data-rmd="${esc(x._id)}">Delete</button></td></tr>`).join("")}</table>` : '<p class="empty">No departments yet.</p>'}</div>
+      <form class="card side" id="depf"><h3>${d ? "Edit department" : "Add department"}</h3>
+        <label for="depn">Name</label><input id="depn" required maxlength="60" value="${esc(d && d.name)}">
+        <label for="depd">Description</label><textarea id="depd" rows="3" maxlength="200">${esc(d && d.description)}</textarea>
+        <button class="btn p" style="width:100%;justify-content:center">${d ? "Save changes" : "Add department"}</button>
+        ${d ? '<button type="button" class="btn" id="depcancel" style="width:100%;justify-content:center;margin-top:8px">Cancel edit</button>' : ""}
+      </form></div>`;
+    $("#depf").onsubmit = async (e) => {
+      e.preventDefault();
+      const body = { name: $("#depn").value.trim(), description: $("#depd").value.trim() };
+      try { await api(depEditing ? `/departments/${depEditing}` : "/departments", { method: depEditing ? "PUT" : "POST", body }); toast("Saved"); depEditing = null; loadDeps(); } catch (err) { fail(err); }
+    };
+    if ($("#depcancel")) $("#depcancel").onclick = () => { depEditing = null; loadDeps(); };
+  }
+  $("#deps").addEventListener("click", async (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.edd) { depEditing = b.dataset.edd; loadDeps(); }
+    if (b.dataset.rmd && confirm("Delete this department?")) { try { await api(`/departments/${b.dataset.rmd}`, { method: "DELETE" }); toast("Deleted"); loadDeps(); } catch (err) { fail(err); } }
   });
 
   /* ---------- doctors (CRUD) ---------- */

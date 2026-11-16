@@ -26,6 +26,7 @@ app.use(express.static(path.join(__dirname, "..", "public")));
 
 app.use((err, _q, res, _n) => {
   if (err.name === "CastError") return res.status(400).json({ error: "Invalid input" });
+  if (err.code === 11000) return res.status(409).json({ error: "That name already exists" });
   if (err.name === "ValidationError" || err.code === "LIMIT_FILE_SIZE" || /Only JPG/.test(err.message))
     return res.status(400).json({ error: err.message });
   if (err.status) return res.status(err.status).json({ error: err.message });

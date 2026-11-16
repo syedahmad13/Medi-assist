@@ -51,6 +51,15 @@ for (const k of ["GEMINI_API_KEY", "SMTP_URL", "MONGO_URI"]) process.env[k] = ""
   assert.ok(doc._id); ok("staff creates doctor");
   assert.equal((await call("PUT", `/api/doctors/${doc._id}`, { token: st, body: { fee: 600 } })).json.fee, 600); ok("staff updates doctor");
 
+  // departments CRUD
+  const dep = await call("POST", "/api/departments", { token: st, body: { name: "Neurology", description: "Brain and nerves" } });
+  assert.equal(dep.status, 201); ok("staff creates department");
+  assert.equal((await call("POST", "/api/departments", { token: st, body: { name: "Neurology" } })).status, 409); ok("duplicate department name 409");
+  assert.equal((await call("POST", "/api/departments", { token: pt, body: { name: "Nope" } })).status, 403); ok("patient cannot create department");
+  assert.equal((await call("PUT", `/api/departments/${dep.json._id}`, { token: st, body: { description: "Neuro care" } })).json.description, "Neuro care"); ok("staff edits department");
+  assert.equal((await call("DELETE", `/api/departments/${cardio._id}`, { token: st })).status, 409); ok("department with doctors cannot be deleted");
+  assert.equal((await call("DELETE", `/api/departments/${dep.json._id}`, { token: st })).status, 204); ok("staff deletes empty department");
+
   // slots + booking
   const d = new Date(); d.setDate(d.getDate() + ((1 - d.getDay() + 7) % 7 || 7) + 7); // a Monday, 1-2 weeks out
   const { localDate } = require("./lib");
