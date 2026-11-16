@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hospital directory – MediAssist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav><div class="w">
+  <a class="logo" href="index.html"><img src="logo.svg" alt="" width="32" height="32">MediAssist</a>
+  <div class="links"><a href="doctors.html">Doctors</a><a href="index.html#departments">Departments</a><a href="pharmacy.html">Pharmacy</a><a href="index.html#concierge">Concierge</a></div>
+  <div class="nr"><span class="sos">Emergency: 108</span><a class="btn" href="login.html">Login</a><a class="btn p" href="register.html">Register</a></div>
+</div></nav>
+
+<div class="bar"><div class="w"><a href="index.html">Home</a> / Hospital directory</div></div>
+
+<main class="w pg">
+  <h1>Hospital directory</h1>
+  <p>Departments, doctors and weekly timings, read from the hospital's XML file (<a href="doctors.xml" style="color:var(--p);font-weight:600">doctors.xml</a>) with JavaScript.</p>
+  <div class="chips f" id="dep"></div>
+  <div class="g3" id="list"><p class="empty">Loading…</p></div>
+</main>
+
+<footer><div class="w"><div class="bot" style="margin:0;padding:0;border:0"><span>© 2026 MediAssist. Student project.</span><span>Health data is handled in line with India's DPDP Act 2023.</span></div></div></footer>
+<script src="app.js"></script>
+<script>
+(async () => {
+  const text = (el, tag) => (el.querySelector(tag) || {}).textContent || "";
+  let xml;
+  try {
+    const r = await fetch("doctors.xml");
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    xml = new DOMParser().parseFromString(await r.text(), "application/xml");
+    if (xml.querySelector("parsererror")) throw new Error("The XML file is not well-formed");
+  } catch (e) { $("#list").innerHTML = `<p class="empty">Could not load the directory: ${esc(e.message)}</p>`; return; }
+
+  const deps = [...xml.querySelectorAll("department")].map((d) => ({ name: d.getAttribute("name"), about: text(d, "description") }));
+  const docs = [...xml.querySelectorAll("doctor")].map((d) => ({
+    dept: d.getAttribute("department"), name: text(d, "name"), q: text(d, "qualification"),
+    years: text(d, "experienceYears"), fee: text(d, "fee"),
+    slots: [...d.querySelectorAll("slot")].map((s) => `${s.getAttribute("day")} ${s.getAttribute("from")}–${s.getAttribute("to")}`),
+  }));
+
+  let current = "";
+  const draw = () => {
+    const shown = docs.filter((d) => !current || d.dept === current);
+    $("#list").innerHTML = shown.map((d) => `
+      <div class="card doc">
+        <span class="pill">${esc(d.dept)}</span>
+        <h3 style="margin-top:10px">${esc(d.name)}</h3>
+        <div class="q">${esc(d.q)} · ${esc(d.years)} years experience · ₹${esc(d.fee)}</div>
+        <p style="font-size:13px">${esc(d.slots.join(" · "))}</p>
+        <a class="btn sm p" style="margin-top:12px" href="doctors.html?dept=${encodeURIComponent(d.dept)}">Book</a>
+      </div>`).join("") || '<p class="empty">No doctors in this department.</p>';
+  };
+  $("#dep").innerHTML = `<span class="on" data-d="">All</span>` + deps.map((d) => `<span data-d="${esc(d.name)}" title="${esc(d.about)}">${esc(d.name)}</span>`).join("");
+  $("#dep").onclick = (e) => {
+    const c = e.target.closest("span"); if (!c) return;
+    current = c.dataset.d;
+    $$("#dep span").forEach((x) => x.classList.toggle("on", x === c));
+    draw();
+  };
+  draw();
+})();
+</script>
+</body>
+</html>

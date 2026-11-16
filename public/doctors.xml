@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Static copy of the hospital directory for the XML lab. The live list comes from the API. -->
+<hospital>
+  <name>MediAssist</name>
+  <departments>
+    <department name="Cardiology"><description>Heart care, ECG, echo and preventive cardiology.</description></department>
+    <department name="ENT"><description>Ear, nose and throat: sinus, hearing and voice assessment.</description></department>
+    <department name="Orthopaedics"><description>Joint and spine care, fractures and rehabilitation.</description></department>
+    <department name="Dermatology"><description>Skin, hair and nail conditions, eczema and acne.</description></department>
+    <department name="Pediatrics"><description>Child health, vaccination and growth checks.</description></department>
+    <department name="General Medicine"><description>Fever, infections, blood pressure and diabetes care.</description></department>
+  </departments>
+  <doctors>
+    <doctor department="Cardiology">
+      <name>Dr. Arvind Mehta</name>
+      <qualification>MBBS, MD</qualification>
+      <experienceYears>22</experienceYears>
+      <fee currency="INR">1200</fee>
+      <timings>
+        <slot day="Mon" from="10:00" to="13:00"/>
+        <slot day="Tue" from="10:00" to="13:00"/>
+        <slot day="Wed" from="10:00" to="13:00"/>
+        <slot day="Thu" from="10:00" to="13:00"/>
+        <slot day="Fri" from="10:00" to="13:00"/>
+      </timings>
+    </doctor>
+    <doctor department="Orthopaedics">
+      <name>Dr. Rohan Mehta</name>
+      <qualification>MBBS, MS Ortho</qualification>
+      <experienceYears>14</experienceYears>
+      <fee currency="INR">1000</fee>
+      <timings>
+        <slot day="Mon" from="10:00" to="13:00"/>
+        <slot day="Tue" from="10:00" to="13:00"/>
+        <slot day="Wed" from="10:00" to="13:00"/>
+        <slot day="Thu" from="10:00" to="13:00"/>
+        <slot day="Fri" from="10:00" to="13:00"/>
+      </timings>
+    </doctor>
+    <doctor department="Pediatrics">
+      <name>Dr. Sunita Rao</name>
+      <qualification>MBBS, DCH</qualification>
+      <experienceYears>16</experienceYears>
+      <fee currency="INR">800</fee>
+      <timings>
+        <slot day="Mon" from="11:00" to="17:00"/>
+        <slot day="Tue" from="11:00" to="17:00"/>
+        <slot day="Wed" from="11:00" to="17:00"/>
+        <slot day="Thu" from="11:00" to="17:00"/>
+        <slot day="Fri" from="11:00" to="17:00"/>
+      </timings>
+    </doctor>
+    <doctor department="ENT">
+      <name>Dr. Kiran Shah</name>
+      <qualification>MBBS, MS ENT</qualification>
+      <experienceYears>10</experienceYears>
+      <fee currency="INR">700</fee>
+      <timings>
+        <slot day="Mon" from="09:30" to="16:00"/>
+        <slot day="Tue" from="09:30" to="16:00"/>
+        <slot day="Wed" from="09:30" to="16:00"/>
+        <slot day="Thu" from="09:30" to="16:00"/>
+        <slot day="Fri" from="09:30" to="16:00"/>
+      </timings>
+    </doctor>
+    <doctor department="Dermatology">
+      <name>Dr. Neha Iyer</name>
+      <qualification>MBBS, MD Derm</qualification>
+      <experienceYears>9</experienceYears>
+      <fee currency="INR">800</fee>
+      <timings>
+        <slot day="Mon" from="10:00" to="14:00"/>
+        <slot day="Tue" from="10:00" to="14:00"/>
+        <slot day="Wed" from="10:00" to="14:00"/>
+        <slot day="Thu" from="10:00" to="14:00"/>
+        <slot day="Fri" from="10:00" to="14:00"/>
+      </timings>
+    </doctor>
+    <doctor department="General Medicine">
+      <name>Dr. Imran Qureshi</name>
+      <qualification>MBBS, MD</qualification>
+      <experienceYears>12</experienceYears>
+      <fee currency="INR">500</fee>
+      <timings>
+        <slot day="Mon" from="09:00" to="17:00"/>
+        <slot day="Tue" from="09:00" to="17:00"/>
+        <slot day="Wed" from="09:00" to="17:00"/>
+        <slot day="Thu" from="09:00" to="17:00"/>
+        <slot day="Fri" from="09:00" to="17:00"/>
+      </timings>
+    </doctor>
+  </doctors>
+</hospital>
