@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My dashboard – MediAssist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav><div class="w">
+  <a class="logo" href="index.html"><i>+</i>MediAssist</a>
+  <div class="links"><a href="doctors.html">Doctors</a><a href="index.html#departments">Departments</a><a href="pharmacy.html">Pharmacy</a><a href="index.html#concierge">Concierge</a></div>
+  <div class="nr"><span class="sos">Emergency: 108</span><a class="btn" href="login.html">Login</a><a class="btn p" href="register.html">Register</a></div>
+</div></nav>
+
+<main class="w pg">
+  <h1 id="hi">Your dashboard</h1>
+  <p>Your appointments, prescription requests and payments in one place.</p>
+
+  <h2 style="font-size:20px;margin:32px 0 12px">Appointments</h2>
+  <div id="appts"><p class="empty">Loading…</p></div>
+
+  <h2 style="font-size:20px;margin:32px 0 12px">Prescription requests</h2>
+  <div id="rxs"><p class="empty">Loading…</p></div>
+
+  <h2 style="font-size:20px;margin:32px 0 12px">Payment history</h2>
+  <div class="card" id="pays"><p class="empty">Loading…</p></div>
+</main>
+
+<dialog id="rs" style="border:1px solid var(--line);border-radius:16px;padding:24px;max-width:360px;width:90%">
+  <h3 class="j" style="margin-bottom:12px">Reschedule</h3>
+  <label for="rd">New date</label><input type="date" id="rd">
+  <label for="rt">Free slots</label><select id="rt"></select>
+  <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" id="rclose">Close</button><button class="btn p" id="rok">Reschedule</button></div>
+</dialog>
+
+<footer><div class="w"><div class="bot" style="margin:0;padding:0;border:0"><span>© 2026 MediAssist. Student project.</span><span>Health data is handled in line with India's DPDP Act 2023.</span></div></div></footer>
+<script src="app.js"></script>
+<script>
+if (requireLogin()) {
+  if (me().role === "staff") location.href = "staff.html";
+  $("#hi").textContent = "Hello, " + me().name.split(" ")[0];
+  let appts = [], cur = null;
+
+  async function load() {
+    const [ap, rx, pay] = await Promise.all([api("/appointments"), api("/prescriptions"), api("/payments")]);
+    appts = ap;
+    $("#appts").innerHTML = ap.length ? ap.map((a) => `
+      <div class="card" style="margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+          <div><b class="j" style="color:var(--ink);font-size:17px">${esc(a.doctor ? a.doctor.name : "Doctor removed")}</b><br>${esc(a.date)} at ${esc(a.time)}${a.reason ? " · " + esc(a.reason) : ""}</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start">${a.active ? `
+            <button class="btn sm p" data-pay="${esc(a._id)}">Pay fee (demo)</button>
+            <button class="btn sm" data-fail="${esc(a._id)}">Test failed payment</button>
+            <button class="btn sm" data-rs="${esc(a._id)}">Reschedule</button>
+            <button class="btn sm d" data-cx="${esc(a._id)}">Cancel</button>` : ""}</div>
+        </div>${stepsHtml(aptSteps(a))}</div>`).join("") : '<p class="empty">No appointments yet. <a href="doctors.html" style="color:var(--p);font-weight:600">Book one</a></p>';
+
+    $("#rxs").innerHTML = rx.length ? rx.map((p) => `
+      <div class="card" style="margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+          <div><b class="j" style="color:var(--ink)">Request #${esc(p._id.slice(-6).toUpperCase())}</b> <span class="stat ${p.status === "rejected" ? "x" : ""}">${esc(p.status.replace("_", " "))}</span><br>${esc(p.medicines.map((m) => m.name).join(", ") || "No medicines listed yet")}${p.staffNote ? `<br><small style="color:var(--mute)">Staff note: ${esc(p.staffNote)}</small>` : ""}</div>
+          <a class="btn sm" href="pharmacy.html?id=${esc(p._id)}">Open</a>
+        </div>${stepsHtml(rxSteps(p))}</div>`).join("") : '<p class="empty">No prescription requests. <a href="pharmacy.html" style="color:var(--p);font-weight:600">Upload one</a></p>';
+
+    $("#pays").innerHTML = pay.length ? `<table><tr><th>Date</th><th>For</th><th>Amount</th><th>Status</th></tr>${pay.map((p) =>
+      `<tr><td>${fmtTime(p.createdAt)}</td><td>${esc(p.kind)}</td><td>₹${esc(p.amount)}</td><td><span class="stat ${p.status === "failed" ? "x" : ""}">${esc(p.status)}</span></td></tr>`).join("")}</table>` : '<p class="empty">No payments yet.</p>';
+  }
+  const run = (fn) => fn().then(load).catch((e) => toast(e.message, true));
+
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    const d = b.dataset;
+    if (d.cx && confirm("Cancel this appointment?")) run(() => api(`/appointments/${d.cx}/cancel`, { method: "PATCH" }).then(() => toast("Appointment cancelled")));
+    if (d.pay || d.fail) run(async () => {
+      try {
+        await api("/payments/pay", { method: "POST", body: { kind: "consultation", appointmentId: d.pay || d.fail, simulate: d.fail ? "fail" : "success" } });
+        toast("Payment successful (demo)");
+      } catch (err) { if (err.status === 402) toast("Payment failed (demo)", true); else throw err; }
+    });
+    if (d.rs) { cur = d.rs; $("#rd").value = ""; $("#rt").innerHTML = ""; $("#rs").showModal(); }
+  });
+  $("#rclose").onclick = () => $("#rs").close();
+  $("#rd").onchange = async () => {
+    const a = appts.find((x) => x._id === cur);
+    const s = await api(`/doctors/${a.doctor._id}/slots?date=${$("#rd").value}`).catch(() => []);
+    $("#rt").innerHTML = s.length ? s.map((t) => `<option>${esc(t)}</option>`).join("") : '<option value="">No free slots</option>';
+  };
+  $("#rok").onclick = () => {
+    if (!$("#rd").value || !$("#rt").value) return;
+    run(() => api(`/appointments/${cur}/reschedule`, { method: "PATCH", body: { date: $("#rd").value, time: $("#rt").value } }).then(() => { $("#rs").close(); toast("Rescheduled"); }));
+  };
+  load().catch((e) => toast(e.message, true));
+}
+</script>
+</body>
+</html>

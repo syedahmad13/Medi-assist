@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Staff dashboard – MediAssist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav><div class="w">
+  <a class="logo" href="index.html"><i>+</i>MediAssist <span class="pill" style="margin-left:6px">Staff</span></a>
+  <div class="links"></div>
+  <div class="nr"><a class="btn" href="login.html">Login</a></div>
+</div></nav>
+
+<main class="w pg">
+  <h1>Staff dashboard</h1>
+  <div class="tabs" id="tabs">
+    <button class="on" data-t="rx">Prescription review</button>
+    <button data-t="docs">Doctors</button>
+    <button data-t="appts">Appointments</button>
+  </div>
+  <section id="rx" style="padding:16px 0 0"></section>
+  <section id="docs" style="padding:16px 0 0" hidden></section>
+  <section id="appts" style="padding:16px 0 0" hidden></section>
+</main>
+
+<script src="app.js"></script>
+<script>
+if (requireLogin("staff")) {
+  const fail = (e) => toast(e.message, true);
+  $("#tabs").onclick = (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    $$("#tabs button").forEach((x) => x.classList.toggle("on", x === b));
+    ["rx", "docs", "appts"].forEach((id) => $("#" + id).hidden = id !== b.dataset.t);
+    ({ rx: loadRx, docs: loadDocs, appts: loadAppts })[b.dataset.t]();
+  };
+
+  /* ---------- prescriptions ---------- */
+  let rxs = [], sel = null, filter = "";
+  const NEXT = { sent: [["reviewing", "Start review"]], reviewing: [["approved", "Approve"], ["rejected", "Reject"]], approved: [["ready", "Mark ready for pickup"]], ready: [["collected", "Mark collected"]] };
+  const row = (m = {}) => `<div class="rxrow" style="margin-bottom:8px">
+    <input aria-label="Medicine" value="${esc(m.name)}" data-k="name"><input aria-label="Dosage" value="${esc(m.dosage)}" data-k="dosage">
+    <input aria-label="Per day" type="number" value="${esc(m.timesPerDay)}" data-k="timesPerDay"><input aria-label="Days" type="number" value="${esc(m.days)}" data-k="days">
+    <input aria-label="Qty" type="number" value="${esc(m.quantity)}" data-k="quantity"><button class="btn sm d" data-del type="button">✕</button></div>`;
+
+  async function loadRx() {
+    rxs = await api("/prescriptions" + (filter ? "?status=" + filter : "")).catch((e) => (fail(e), []));
+    $("#rx").innerHTML = `<div class="two"><div>
+      <label for="flt">Show</label>
+      <select id="flt"><option value="">All</option>${["sent", "reviewing", "approved", "rejected", "ready", "collected", "uploaded", "ai_read"].map((s) => `<option ${s === filter ? "selected" : ""} value="${s}">${s}</option>`).join("")}</select>
+      ${rxs.length ? rxs.map((p) => `<div class="listrow ${p._id === sel ? "on" : ""}" data-id="${esc(p._id)}"><b class="j" style="color:var(--ink)">#${esc(p._id.slice(-6).toUpperCase())}</b> ${esc(p.patient ? p.patient.name : "")} <span class="stat">${esc(p.status)}</span><br><small style="color:var(--mute)">${fmtTime(p.createdAt)}</small></div>`).join("") : '<p class="empty">No requests.</p>'}
+    </div><div class="card" id="rxd"><p class="empty">Select a request.</p></div></div>`;
+    $("#flt").onchange = (e) => { filter = e.target.value; loadRx(); };
+    if (sel) showRx();
+  }
+  async function showRx() {
+    const p = rxs.find((x) => x._id === sel); if (!p) return;
+    const reviewing = p.status === "reviewing";
+    $$("#rx .listrow").forEach((r) => r.classList.toggle("on", r.dataset.id === sel));
+    $("#rxd").innerHTML = `<h3 style="font-size:18px">Request #${esc(p._id.slice(-6).toUpperCase())} · ${esc(p.patient ? p.patient.name : "")}</h3>
+      <div style="margin:16px 0">${stepsHtml(rxSteps(p))}</div>
+      <img id="ph" alt="Prescription photo" style="max-width:100%;max-height:300px;border:1px solid var(--line);border-radius:10px;margin-bottom:14px;display:none">
+      <h4 class="j" style="margin-bottom:8px">AI list ${reviewing ? "(fix any mistake)" : ""}</h4>
+      <div id="rows">${reviewing ? p.medicines.map(row).join("") : p.medicines.map((m) => `<div class="med"><div><b>${esc(m.name)}</b><small>${esc(m.dosage || "")} · ${esc(m.timesPerDay ?? "?")}/day · ${esc(m.days ?? "?")} days</small></div><span>${esc(m.quantity ?? "?")} qty</span></div>`).join("")}</div>
+      ${reviewing ? '<button class="btn sm" id="addm" type="button">Add row</button>' : ""}
+      ${NEXT[p.status] ? `<label for="note" style="display:block;margin-top:16px">Note to patient ${p.status === "reviewing" ? "(required for reject)" : "(optional)"}</label><textarea id="note" rows="2"></textarea>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">${NEXT[p.status].map(([s, l]) => `<button class="btn ${s === "rejected" ? "d" : "p"}" data-s="${s}">${l}</button>`).join("")}</div>` : ""}
+      <h4 class="j" style="margin:20px 0 8px">History</h4>
+      ${p.history.map((h) => `<div style="font-size:13px;padding:4px 0">${esc(h.step)} · ${fmtTime(h.at)}${h.note ? " · " + esc(h.note) : ""}</div>`).join("")}`;
+    fetch(`/api/prescriptions/${p._id}/image`, { headers: { Authorization: "Bearer " + store.get("t") } })
+      .then((r) => r.ok ? r.blob() : null).then((b) => { if (b && $("#ph")) { $("#ph").src = URL.createObjectURL(b); $("#ph").style.display = "block"; } }).catch(() => {});
+  }
+  $("#rx").addEventListener("click", async (e) => {
+    const r = e.target.closest(".listrow"); if (r) { sel = r.dataset.id; showRx(); return; }
+    const b = e.target.closest("button"); if (!b) return;
+    if (b.hasAttribute("data-del")) b.closest(".rxrow").remove();
+    if (b.id === "addm") $("#rows").insertAdjacentHTML("beforeend", row());
+    if (b.dataset.s) {
+      const body = { status: b.dataset.s, note: ($("#note").value || "").trim() || undefined };
+      if ($$("#rows .rxrow").length) body.medicines = $$("#rows .rxrow").map((x) => {
+        const g = (k) => $(`[data-k=${k}]`, x).value.trim(), n = (v) => (v === "" ? null : Number(v));
+        return { name: g("name"), dosage: g("dosage") || null, timesPerDay: n(g("timesPerDay")), days: n(g("days")), quantity: n(g("quantity")) };
+      }).filter((m) => m.name);
+      try { await api(`/prescriptions/${sel}/status`, { method: "PATCH", body }); toast("Updated"); filter = ""; /* keep the request visible after its status changes */ loadRx(); } catch (err) { fail(err); }
+    }
+  });
+
+  /* ---------- doctors (CRUD) ---------- */
+  const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  let deps = [], editing = null;
+  async function loadDocs() {
+    let docs;
+    try { [deps, docs] = await Promise.all([api("/departments"), api("/doctors")]); } catch (e) { return fail(e); }
+    const d = editing ? docs.find((x) => x._id === editing) : null;
+    const av = d && d.availability[0];
+    $("#docs").innerHTML = `<div class="two"><div class="card"><table><tr><th>Name</th><th>Department</th><th>Fee</th><th></th></tr>
+      ${docs.map((x) => `<tr><td>${esc(x.name)}</td><td>${esc(x.department.name)}</td><td>₹${esc(x.fee)}</td><td><button class="btn sm" data-ed="${esc(x._id)}">Edit</button> <button class="btn sm d" data-rm="${esc(x._id)}">Delete</button></td></tr>`).join("")}</table></div>
+      <form class="card side" id="df"><h3>${d ? "Edit doctor" : "Add doctor"}</h3>
+        <label for="dn">Name</label><input id="dn" required value="${esc(d && d.name)}">
+        <label for="dd">Department</label><select id="dd">${deps.map((x) => `<option value="${esc(x._id)}" ${d && d.department._id === x._id ? "selected" : ""}>${esc(x.name)}</option>`).join("")}</select>
+        <label for="dq">Qualification</label><input id="dq" value="${esc(d && d.qualification)}">
+        <label for="dy">Years of experience</label><input id="dy" type="number" min="0" value="${esc(d && d.experienceYears)}">
+        <label for="df2">Fee (₹)</label><input id="df2" type="number" min="0" value="${esc(d ? d.fee : 500)}">
+        <label>Available days</label><div style="display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 14px">${DAYS.map((n, i) => `<label style="font-weight:400"><input type="checkbox" style="width:auto;margin:0 4px 0 0" data-wd="${i}" ${(d ? d.availability.some((a) => a.weekday === i) : i >= 1 && i <= 5) ? "checked" : ""}>${n}</label>`).join("")}</div>
+        <div style="display:flex;gap:8px"><div style="flex:1"><label for="ds">From</label><input id="ds" type="time" value="${esc(av ? av.start : "10:00")}"></div><div style="flex:1"><label for="de">To</label><input id="de" type="time" value="${esc(av ? av.end : "13:00")}"></div></div>
+        <button class="btn p" style="width:100%;justify-content:center">${d ? "Save changes" : "Add doctor"}</button>
+        ${d ? '<button type="button" class="btn" id="dcancel" style="width:100%;justify-content:center;margin-top:8px">Cancel edit</button>' : ""}
+      </form></div>`;
+    $("#df").onsubmit = async (e) => {
+      e.preventDefault();
+      const body = { name: $("#dn").value.trim(), department: $("#dd").value, qualification: $("#dq").value.trim(), experienceYears: Number($("#dy").value) || 0, fee: Number($("#df2").value) || 0,
+        availability: $$("[data-wd]:checked").map((c) => ({ weekday: Number(c.dataset.wd), start: $("#ds").value, end: $("#de").value })) };
+      try { await api(editing ? `/doctors/${editing}` : "/doctors", { method: editing ? "PUT" : "POST", body }); toast("Saved"); editing = null; loadDocs(); } catch (err) { fail(err); }
+    };
+    if ($("#dcancel")) $("#dcancel").onclick = () => { editing = null; loadDocs(); };
+  }
+  $("#docs").addEventListener("click", async (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.ed) { editing = b.dataset.ed; loadDocs(); }
+    if (b.dataset.rm && confirm("Delete this doctor?")) { try { await api(`/doctors/${b.dataset.rm}`, { method: "DELETE" }); toast("Deleted"); loadDocs(); } catch (err) { fail(err); } }
+  });
+
+  /* ---------- appointments ---------- */
+  async function loadAppts() {
+    const a = await api("/appointments").catch((e) => (fail(e), []));
+    $("#appts").innerHTML = `<div class="card">${a.length ? `<table><tr><th>Patient</th><th>Doctor</th><th>When</th><th>Status</th><th></th></tr>${a.map((x) => `<tr>
+      <td>${esc(x.patient ? x.patient.name : "")}</td><td>${esc(x.doctor ? x.doctor.name : "removed")}</td><td>${esc(x.date)} ${esc(x.time)}</td><td><span class="stat ${x.status === "cancelled" ? "x" : ""}">${esc(x.status)}</span></td>
+      <td>${x.status === "booked" ? `<button class="btn sm p" data-st="confirmed" data-id="${esc(x._id)}">Confirm</button>` : ""}${x.status === "confirmed" ? `<button class="btn sm p" data-st="completed" data-id="${esc(x._id)}">Mark done</button>` : ""}</td></tr>`).join("")}</table>` : '<p class="empty">No appointments.</p>'}</div>`;
+  }
+  $("#appts").addEventListener("click", async (e) => {
+    const b = e.target.closest("button[data-st]"); if (!b) return;
+    try { await api(`/appointments/${b.dataset.id}/status`, { method: "PATCH", body: { status: b.dataset.st } }); loadAppts(); } catch (err) { fail(err); }
+  });
+
+  loadRx();
+}
+</script>
+</body>
+</html>

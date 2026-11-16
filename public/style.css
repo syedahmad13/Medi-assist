@@ -1,0 +1,113 @@
+:root{--p:#0d9488;--pd:#0f766e;--pl:#14b8a6;--mint:#f0fdfa;--wash:#f8fafc;--ink:#0f172a;--body:#334155;--mute:#64748b;--line:#e2e8f0;--red:#e11d48;--amber:#d97706}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{font:15px/1.6 Inter,system-ui,sans-serif;color:var(--body);background:#fff}
+h1,h2,h3,.j{font-family:"Plus Jakarta Sans",sans-serif;color:var(--ink)}
+a{color:inherit;text-decoration:none}
+.w{max-width:1180px;margin:0 auto;padding:0 24px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:8px;font:600 14px "Plus Jakarta Sans";border:1px solid transparent;cursor:pointer;transition:background .2s}
+.btn.p{background:var(--p);color:#fff}.btn.p:hover{background:var(--pd)}
+.btn.s{background:#fff;border-color:var(--line);color:var(--ink)}.btn.s:hover{background:var(--mint)}
+.pill{display:inline-block;padding:3px 12px;border-radius:99px;background:#ccfbf1;color:var(--pd);font:600 12px "Plus Jakarta Sans"}
+.card{background:#fff;border:1px solid #e6fffa;border:1px solid var(--line);border-radius:16px;padding:24px;box-shadow:0 4px 20px -2px rgba(13,148,136,.06)}
+section{padding:80px 0}
+.head{text-align:center;max-width:640px;margin:0 auto 48px}
+.head h2{font-size:32px;line-height:1.25;letter-spacing:-.01em;margin:14px 0 10px}
+/* nav */
+nav{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+nav .w{display:flex;align-items:center;justify-content:space-between;height:64px}
+.logo{display:flex;align-items:center;gap:10px;font:700 18px "Plus Jakarta Sans";color:var(--ink)}
+.logo i{width:32px;height:32px;border-radius:8px;background:var(--p);color:#fff;display:grid;place-items:center;font-style:normal}
+.links{display:flex;gap:28px;font-weight:500;font-size:14px}.links a:hover{color:var(--p)}
+.nr{display:flex;gap:12px;align-items:center}
+.sos{background:#fff1f2;color:var(--red);font:600 12px "Plus Jakarta Sans";padding:5px 12px;border-radius:99px}
+/* hero */
+.hero{background:linear-gradient(180deg,var(--mint),#fff);padding:72px 0 56px}
+.hero .w{display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center}
+.hero h1{font-size:48px;line-height:1.1;letter-spacing:-.02em;margin:16px 0}
+.hero h1 em{font-style:normal;color:var(--p)}
+.hero p{max-width:480px;margin-bottom:28px}
+.ctas{display:flex;gap:12px;flex-wrap:wrap}
+.chat{padding:20px;display:flex;flex-direction:column;gap:12px;font-size:14px}
+.chat .top{display:flex;justify-content:space-between;align-items:center;font:700 14px "Plus Jakarta Sans";color:var(--ink)}
+.bub{padding:10px 14px;border-radius:12px;max-width:85%}
+.me{align-self:flex-end;background:var(--p);color:#fff}
+.ai{background:var(--mint);border:1px solid #ccfbf1}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chips span{padding:6px 12px;border-radius:99px;border:1px solid #99f6e4;background:var(--mint);color:var(--pd);font:600 12px "Plus Jakarta Sans"}
+/* grids */
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+.feat h3,.dept h3{font-size:17px;margin:12px 0 6px}
+.feat p,.dept p{font-size:14px;color:var(--mute)}
+.ic{width:40px;height:40px;border-radius:10px;background:var(--mint);color:var(--p);display:grid;place-items:center;font:700 16px "Plus Jakarta Sans"}
+.feat a,.dept .go{display:block;margin-top:16px;font:600 13px "Plus Jakarta Sans";color:var(--p)}
+.dept .go{background:var(--mint);text-align:center;padding:9px;border-radius:8px}
+.dept small{color:var(--mute);font-size:12px}
+/* tracker */
+.trk{max-width:860px;margin:0 auto;padding:32px}
+.trk .meta{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:28px;font-size:13px}
+.steps{display:grid;grid-template-columns:repeat(var(--n,5),1fr);position:relative;text-align:center}
+.steps:before{content:"";position:absolute;top:19px;left:calc(50% / var(--n,5));right:calc(50% / var(--n,5));height:2px;background:var(--line)}
+.st{position:relative;font-size:12px;color:var(--mute)}
+.st b{display:block;font:600 13px "Plus Jakarta Sans";color:var(--ink)}
+.st i{width:40px;height:40px;border-radius:50%;margin:0 auto 10px;display:grid;place-items:center;font-style:normal;font-weight:700;background:#fff;border:2px solid var(--line);position:relative}
+.st.done i{background:var(--p);border-color:var(--p);color:#fff}
+.st.now i{border-color:var(--pl);color:var(--p);box-shadow:0 0 0 5px rgba(20,184,166,.18)}
+.note{margin-top:28px;background:var(--wash);border-radius:10px;padding:12px 16px;font-size:13px}
+/* how */
+.how .n{font:800 28px "Plus Jakarta Sans";color:var(--pl)}
+.how h3{margin:8px 0 6px;font-size:17px}
+.how p{font-size:14px;color:var(--mute)}
+/* emergency */
+.em{background:linear-gradient(90deg,#9f1239,var(--red));border-radius:20px;padding:32px;color:#fff;display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap}
+.em h3{color:#fff;font-size:22px;max-width:620px}.em p{opacity:.9;font-size:14px;margin-top:6px}
+.em .btn{background:#fff;color:var(--red)}/* footer */
+footer{background:var(--wash);border-top:1px solid var(--line);padding:56px 0 24px;margin-top:80px;font-size:14px}
+.fg{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:32px}
+footer h4{font:700 13px "Plus Jakarta Sans";color:var(--ink);margin-bottom:12px}
+footer li{list-style:none;margin-bottom:8px;color:var(--mute)}footer ul{padding:0}
+footer .bot{margin-top:40px;padding-top:20px;border-top:1px solid var(--line);font-size:12px;color:var(--mute);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+@media(max-width:900px){.hero .w,.fg{grid-template-columns:1fr}.g3,.g4{grid-template-columns:1fr 1fr}.links{display:none}.hero h1{font-size:38px}.steps{grid-template-columns:1fr;gap:18px;text-align:left}.steps:before{display:none}.st i{margin:0 0 6px}}
+@media(max-width:600px){.g3,.g4{grid-template-columns:1fr}.sos{display:none}}
+/* inner pages */
+.bar{background:var(--wash);border-bottom:1px solid var(--line);padding:14px 0;font-size:13px;color:var(--mute)}
+.pg{padding:40px 0 0}
+.pg h1{font-size:32px;margin:10px 0 6px;letter-spacing:-.01em}
+.two{display:grid;grid-template-columns:1.4fr 1fr;gap:24px;align-items:start;margin-top:28px}
+.chips.f{margin:20px 0}.chips.f .on{background:var(--p);color:#fff;border-color:var(--p)}
+.doc{margin-bottom:20px}.doc h3{font-size:20px}.doc .q{color:var(--mute);font-size:13px;margin:2px 0 10px}
+.slots{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+.slot{border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center;font:600 14px "Plus Jakarta Sans";color:var(--ink);background:#fff;cursor:pointer}
+.slot small{display:block;font:400 12px Inter;color:var(--mute)}
+.slot.sel{background:var(--p);border-color:var(--p);color:#fff}.slot.sel small{color:#ccfbf1}
+.side{position:sticky;top:84px}.side h3{font-size:18px;margin-bottom:14px}
+.row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+.row.t{font:700 16px "Plus Jakarta Sans";color:var(--ink);border:0}
+input,textarea,select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;margin:6px 0 14px}
+input:focus,textarea:focus{outline:2px solid var(--p);border-color:transparent}
+label{font:600 13px "Plus Jakarta Sans";color:var(--ink)}
+.med{display:flex;justify-content:space-between;gap:16px;padding:16px 0;border-bottom:1px solid var(--line)}
+.med b{font:700 16px "Plus Jakarta Sans";color:var(--ink)}.med small{display:block;color:var(--mute);margin-top:2px}
+.up{border:2px dashed #99f6e4;background:var(--mint);border-radius:16px;padding:32px;text-align:center}
+@media(max-width:900px){.two{grid-template-columns:1fr}.side{position:static}.slots{grid-template-columns:1fr 1fr}}
+/* app pages */
+.st.bad i{background:var(--red);border-color:var(--red);color:#fff}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;z-index:50;max-width:90vw}
+.toast.bad{background:var(--red)}
+.bellw{position:relative}.cnt{background:var(--red);color:#fff;border-radius:99px;font-size:11px;padding:1px 7px;margin-left:4px}
+.bl{position:absolute;right:0;top:48px;width:320px;max-height:360px;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 25px -4px rgba(15,23,42,.12);z-index:20}
+.ni{padding:12px 14px;border-bottom:1px solid var(--line);font-size:13px;cursor:default}.ni.un{background:var(--mint);cursor:pointer;font-weight:500}.ni small{display:block;color:var(--mute);font-weight:400;margin-top:2px}
+.log{max-height:300px;overflow:auto;display:flex;flex-direction:column;gap:10px}
+.chat form{display:flex;gap:8px}.chat form input{margin:0}
+.bub.emg{background:#fff1f2;border-color:#fecdd3;color:#9f1239}
+.auth{max-width:420px;margin:56px auto}.auth h1{font-size:28px;margin-bottom:6px}
+.err{color:var(--red);font-size:13px;min-height:20px;margin-bottom:8px}
+.tabs{display:flex;gap:8px;margin:24px 0 8px;flex-wrap:wrap}.tabs button{padding:8px 16px;border-radius:99px;border:1px solid var(--line);background:#fff;font:600 13px "Plus Jakarta Sans";cursor:pointer}.tabs .on{background:var(--p);color:#fff;border-color:var(--p)}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:top}th{font:600 12px "Plus Jakarta Sans";color:var(--mute);text-transform:uppercase;letter-spacing:.03em}
+.btn.sm{padding:6px 12px;font-size:12px}.btn.d{background:#fff1f2;color:var(--red);border-color:#fecdd3}
+.stat{display:inline-block;padding:2px 10px;border-radius:99px;font:600 12px "Plus Jakarta Sans";background:#ccfbf1;color:var(--pd)}.stat.x{background:#fff1f2;color:var(--red)}.stat.w{background:#fef3c7;color:#92400e}
+.rxrow{display:grid;grid-template-columns:2fr 1.4fr .7fr .7fr .7fr auto;gap:6px;align-items:center}.rxrow input{margin:0}
+.listrow{cursor:pointer;padding:12px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:#fff}.listrow.on{border-color:var(--p);background:var(--mint)}
+.empty{color:var(--mute);padding:16px 0}
+@media(max-width:700px){.rxrow{grid-template-columns:1fr 1fr}.bl{width:260px}}
