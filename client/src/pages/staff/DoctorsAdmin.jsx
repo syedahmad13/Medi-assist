@@ -22,7 +22,7 @@ export default function DoctorsAdmin() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { load(); }, [load]);
 
-  const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
+  const set = (k) => (e) => { const v = e.target.value; setForm((f) => ({ ...f, [k]: v })); }; // functional: load() sets the department at the same time
   const toggleDay = (i) => setForm((f) => ({ ...f, days: f.days.includes(i) ? f.days.filter((d) => d !== i) : [...f.days, i] }));
   const reset = () => { setEditing(null); setForm({ ...BLANK, department: departments[0] ? departments[0]._id : "" }); };
 
@@ -52,6 +52,9 @@ export default function DoctorsAdmin() {
     try { await api(`/doctors/${d._id}`, { method: "DELETE" }); toast("Deleted"); load(); }
     catch (err) { toast(err.message, true); }
   };
+
+  // the form needs the department list, so show it only after loading
+  if (!doctors) return <p className="empty">Loading…</p>;
 
   return (
     <div className="two">

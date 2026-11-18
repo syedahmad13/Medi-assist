@@ -1,5 +1,6 @@
 import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
+import ThemeToggle from "./ThemeToggle.jsx";
 import NotificationBell from "./NotificationBell.jsx";
 
 const active = ({ isActive }) => (isActive ? { color: "var(--p)" } : undefined);
@@ -18,6 +19,7 @@ export default function Navbar() {
         </div>
         <div className="nr">
           <span className="sos">Emergency: 108</span>
+          <ThemeToggle />
           {user ? (
             <>
               <NotificationBell />
